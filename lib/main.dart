@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+
 
 void main() {
   runApp(MyApp());
@@ -10,23 +13,46 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  List<Task> tasks = []; // nampung data
+  List<Task> tasks = [];
+  late SharedPreferences _prefs;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTasks();
+  }
+
+  _loadTasks() async {
+    _prefs = await SharedPreferences.getInstance();
+    setState(() {
+      tasks = Task.tasksFromJson(_prefs.getStringList('tasks') ?? []);
+    });
+  }
+
+  _saveTasks() {
+  List<String> tasksJson = tasks.map((task) => jsonEncode(task.toJson())).toList();
+  _prefs.setStringList('tasks', tasksJson);
+}
+
 
   void addTask(String title) {
     setState(() {
       tasks.add(Task(title: title, completed: false));
+      _saveTasks();
     });
   }
 
   void toggleTaskCompleted(int index) {
     setState(() {
       tasks[index].completed = !tasks[index].completed;
+      _saveTasks();
     });
   }
 
   void deleteTask(int index) {
     setState(() {
       tasks.removeAt(index);
+      _saveTasks();
     });
   }
 
@@ -52,33 +78,32 @@ class _MyAppState extends State<MyApp> {
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10.0),
-             
                 ),
                 child: ListView.builder(
                   itemCount: tasks.length,
                   itemBuilder: (context, index) {
-                      return ListTile(
-                        title: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(5.0), // Adjust as desired
-                            color: Colors.grey[200], // Adjust as desired
-                          ),
-                          child: Row( // Wrap icon and title in a Row
-                            children: [
-                              Checkbox(
-                                value: tasks[index].completed,
-                                onChanged: (_) => toggleTaskCompleted(index),
-                              ),
-                              Text(tasks[index].title),
-                            ],
-                          ),
+                    return ListTile(
+                      title: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(5.0),
+                          color: Colors.grey[100],
                         ),
-                        trailing: IconButton(
-                          icon: Icon(Icons.delete),
-                          onPressed: () => deleteTask(index),
+                        child: Row(
+                          children: [
+                            Checkbox(
+                              value: tasks[index].completed,
+                              onChanged: (_) => toggleTaskCompleted(index),
+                            ),
+                            Text(tasks[index].title),
+                          ],
                         ),
-                      );
-                    },
+                      ),
+                      trailing: IconButton(
+                        icon: Icon(Icons.delete),
+                        onPressed: () => deleteTask(index),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -94,4 +119,21 @@ class Task {
   bool completed;
 
   Task({required this.title, this.completed = false});
+
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'completed': completed,
+    };
+  }
+
+  static List<Task> tasksFromJson(List<String> jsonList) {
+    return jsonList.map((json) {
+      Map<String, dynamic> map = jsonDecode(json);
+      return Task(
+        title: map['title'],
+        completed: map['completed'],
+      );
+    }).toList();
+  }
 }
