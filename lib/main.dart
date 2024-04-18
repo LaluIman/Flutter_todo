@@ -59,6 +59,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
         appBar: AppBar(
           title: Text('To-Do List', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -67,15 +68,21 @@ class _MyAppState extends State<MyApp> {
           children: [
             Container(
               margin: EdgeInsets.all(10.0),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10.0), 
+                border: Border.all(color: Colors.black), 
+              ),
               child: TextField(
                 decoration: InputDecoration(
-                  hintText: "Type new To Do",
+                  hintText: "Type new task...",
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
                 ),
                 onSubmitted: (title) => addTask(title),
               ),
             ),
             Expanded(
               child: Container(
+                padding: EdgeInsets.all(1.0),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10.0),
                 ),
@@ -85,8 +92,8 @@ class _MyAppState extends State<MyApp> {
                     return ListTile(
                       title: Container(
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(5.0),
-                          color: Colors.grey[100],
+                          borderRadius: BorderRadius.circular(5),
+                          color: Colors.grey[300],
                         ),
                         child: Row(
                           children: [
@@ -94,14 +101,22 @@ class _MyAppState extends State<MyApp> {
                               value: tasks[index].completed,
                               onChanged: (_) => toggleTaskCompleted(index),
                             ),
-                            Text(tasks[index].title),
+                            Text(tasks[index].title, style: TextStyle(fontSize: 23, fontWeight: FontWeight.w600, color: Colors.black),),
                           ],
                         ),
                       ),
-                      trailing: IconButton(
-                        icon: Icon(Icons.delete),
-                        onPressed: () => deleteTask(index),
-                      ),
+                      trailing: Container(
+                            padding: EdgeInsets.all(5.0),
+                            decoration: BoxDecoration(
+                              color: Colors.red, 
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            child: IconButton(
+                              icon: Icon(Icons.delete),
+                              color: Colors.white,
+                              onPressed: () => deleteTask(index),
+                            ),
+                      )
                     );
                   },
                 ),
